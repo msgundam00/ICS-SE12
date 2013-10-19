@@ -1,0 +1,394 @@
+#/* $begin ncopy-ys */
+##################################################################
+# ncopy.ys - Copy a src block of len ints to dst.
+# Return the number of positive ints (>0) contained in src.
+#
+# Name: Liu Che
+# ID: 5120379066
+# Final CPE:6.03
+# Optimization:
+#	1.Use unrolling, each unrolling group can process 14 elements
+#	  thus eliminate judging&jmp, it can greatly improve performance
+#	2.Use jump table, after unrolling, it can be promised that there 
+#	  are less than 16 elements left, so applying jump table can save 
+#	  clock cycles used to judge and jump. One severe flaw is that 
+#	  there is a bubble between mrmovl and pushl, as well as three bubbles
+#	  after instruction "ret". 
+#	  They are solved by modifying "pipe-full.hcl", applying
+#	  the load forward method.
+#	3.Adding "iaddl" and "ret" into instruction set. Lots of time 
+#	  can be saved.
+#	4.In "pipe-full.hcl", I implemented an "improved" andl, so all the 
+#	  conditional jumps and iaddls are eliminated. Just using andl, 
+#	  the value of %esi can be changed if the value of rA in the
+#	  previous instruction "rmmovl" is greater than 0.
+#	5.Use the ending block written by myself, so that "leave" can be used.
+#	6.At the beginning of the function, "andl %esi,%esi" is used to
+#	  determine whether the current simulator supports pipe. If it does,
+#	  this instruction will be changed to "xorl", setting value of 
+#	  %esi to 0, as well as selecting the suitable coding block
+#	  for the current simulator.
+#	7.This program can automatically choose whether to use some
+#	  optimizations or not according to the simulator which is running
+#	  this program. 
+#	 
+#		
+#
+##################################################################
+# Do not modify this portion
+# Function prologue.
+ncopy:	pushl %ebp		# Save old frame pointer
+	rrmovl %esp,%ebp	# Set up new frame pointer
+	pushl %esi		# Save callee-save regs
+	pushl %ebx
+	pushl %edi
+	mrmovl 8(%ebp),%ebx	# src
+	mrmovl 16(%ebp),%edx	# len
+	mrmovl 12(%ebp),%ecx	# dst
+
+##################################################################
+# You can modify this portion
+# You can modify this portion
+	# Loop header
+
+	irmovl $1,%eax
+	addl %edx,%edx
+	addl %edx,%edx
+	andl %eax,%eax    #test whether using PIPE or not
+	je PIPE
+
+
+SEQ:	
+	mrmovl 16(%ebp),%eax	# len
+	rrmovl %eax,%edx
+	andl %eax,%eax
+	je Done
+
+Loop:	mrmovl (%ebx), %esi	# read val from src...
+	nop
+	rmmovl %esi, (%ecx)	# ...and store it to dst
+	nop
+	andl %esi, %esi		# val <= 0?
+	jg Npos		# if so, goto Npos:
+	iaddl $-1, %eax		# count++
+
+Npos:	iaddl $4, %ebx		# src++
+	iaddl $4, %ecx		# dst++
+	iaddl $-1, %edx		# len--
+	jg Loop		# if so, goto Done:
+	leave
+	ret
+	
+
+
+PIPE:
+Start16:iaddl $-88, %edx
+	jl Start15
+
+Npos16_22:
+	mrmovl 84(%ebx), %edi	# read val from src...
+	rmmovl %edi, 84(%ecx)	# ...and store it to dst
+	andl %edi,%edi		# val <= 0?
+
+Npos16_21:
+	mrmovl 80(%ebx), %edi	# read val from src...
+	rmmovl %edi, 80(%ecx)	# ...and store it to dst
+	andl %edi,%edi		# val <= 0?
+
+Npos16_20:
+	mrmovl 76(%ebx), %edi	# read val from src...
+	rmmovl %edi, 76(%ecx)	# ...and store it to dst
+	andl %edi,%edi		# val <= 0?
+
+Npos16_19:
+	mrmovl 72(%ebx), %edi	# read val from src...
+	rmmovl %edi, 72(%ecx)	# ...and store it to dst
+	andl %edi,%edi		# val <= 0?
+
+Npos16_18:
+	mrmovl 68(%ebx), %edi	# read val from src...
+	rmmovl %edi, 68(%ecx)	# ...and store it to dst
+	andl %edi,%edi		# val <= 0?
+
+
+Npos16_17:
+	mrmovl 64(%ebx), %edi	# read val from src...
+	rmmovl %edi, 64(%ecx)	# ...and store it to dst
+	andl %edi,%edi		# val <= 0?
+	
+
+Npos16_16:
+	mrmovl 60(%ebx), %edi	# read val from src...
+	rmmovl %edi, 60(%ecx)	# ...and store it to dst
+	andl %edi,%edi		# val <= 0?
+	
+
+Npos16_15:
+	mrmovl 56(%ebx), %edi	# read val from src...
+	rmmovl %edi, 56(%ecx)	# ...and store it to dst
+	andl %edi,%edi		# val <= 0?
+	
+Npos16_14:
+	mrmovl 52(%ebx), %edi	# read val from src...
+	rmmovl %edi, 52(%ecx)	# ...and store it to dst
+	andl %edi,%edi		# val <= 0?
+	
+
+Npos16_13:
+	mrmovl 48(%ebx), %edi	# read val from src...
+	rmmovl %edi, 48(%ecx)	# ...and store it to dst
+	andl %edi,%edi		# val <= 0?
+	
+
+Npos16_12:
+	mrmovl 44(%ebx), %edi	# read val from src...
+	rmmovl %edi, 44(%ecx)	# ...and store it to dst
+	andl %edi,%edi		# val <= 0?
+	
+Npos16_11:
+	mrmovl 40(%ebx), %edi	# read val from src...
+	rmmovl %edi, 40(%ecx)	# ...and store it to dst
+	andl %edi,%edi		# val <= 0?
+	
+
+Npos16_10:
+	mrmovl 36(%ebx), %edi	# read val from src...
+	rmmovl %edi, 36(%ecx)	# ...and store it to dst
+	andl %edi,%edi		# val <= 0?
+	
+
+Npos16_9:
+	mrmovl 32(%ebx), %edi	# read val from src...
+	rmmovl %edi, 32(%ecx)	# ...and store it to dst
+	andl %edi,%edi		# val <= 0?
+	
+
+Npos16_8:
+	mrmovl 28(%ebx), %edi	# read val from src...
+	rmmovl %edi, 28(%ecx)	# ...and store it to dst
+	andl %edi,%edi		# val <= 0?
+	
+
+Npos16_7:
+	mrmovl 24(%ebx), %edi	# read val from src...
+	rmmovl %edi, 24(%ecx)	# ...and store it to dst
+	andl %edi,%edi		# val <= 0?
+	
+Npos16_6:
+	mrmovl 20(%ebx), %edi	# read val from src...
+	rmmovl %edi, 20(%ecx)	# ...and store it to dst
+	andl %edi,%edi		# val <= 0?
+	
+Npos16_5:
+	mrmovl 16(%ebx), %edi	# read val from src...
+	rmmovl %edi, 16(%ecx)	# ...and store it to dst
+	andl %edi,%edi		# val <= 0?
+	
+Npos16_4:
+	mrmovl 12(%ebx), %edi	# read val from src...
+	rmmovl %edi, 12(%ecx)	# ...and store it to dst
+	andl %edi,%edi		# val <= 0?
+	
+
+Npos16_3:
+	mrmovl 8(%ebx), %edi	# read val from src...
+	rmmovl %edi, 8(%ecx)	# ...and store it to dst
+	andl %edi,%edi		# val <= 0?
+	
+
+Npos16_2:
+	mrmovl 4(%ebx), %edi	# read val from src...
+	rmmovl %edi, 4(%ecx)	# ...and store it to dst
+	andl %edi,%edi		# val <= 0?
+	
+Npos16_1:
+	mrmovl (%ebx), %edi	# read val from src...
+	rmmovl %edi, (%ecx)	# ...and store it to dst
+	andl %edi,%edi		# val <= 0?
+	
+
+Npos16_0:
+	iaddl $88,%ebx
+	iaddl $88,%ecx
+Start0:	iaddl $-88, %edx
+	jge Npos16_22
+
+
+Start15:	
+	mrmovl Table(%edx),%edi
+	leave 
+	pushl %edi
+	ret
+
+
+
+pos21:
+	mrmovl 80(%ebx), %edi	# read val from src...
+	rmmovl %edi, 80(%ecx)	# ...and store it to dst
+	andl %edi,%edi		# val <= 0?
+
+
+pos20:
+	mrmovl 76(%ebx), %edi	# read val from src...
+	rmmovl %edi, 76(%ecx)	# ...and store it to dst
+	andl %edi,%edi		# val <= 0?
+
+
+pos19:
+	mrmovl 72(%ebx), %edi	# read val from src...
+	rmmovl %edi, 72(%ecx)	# ...and store it to dst
+	andl %edi,%edi		# val <= 0?
+
+
+pos18:
+	mrmovl 68(%ebx), %edi	# read val from src...
+	rmmovl %edi, 68(%ecx)	# ...and store it to dst
+	andl %edi,%edi		# val <= 0?
+
+
+pos17:
+	mrmovl 64(%ebx), %edi	# read val from src...
+	rmmovl %edi, 64(%ecx)	# ...and store it to dst
+	andl %edi,%edi		# val <= 0?
+
+
+
+pos16:
+	mrmovl 60(%ebx), %edi	# read val from src...
+	rmmovl %edi, 60(%ecx)	# ...and store it to dst
+	andl %edi,%edi		# val <= 0?
+	
+
+pos15:
+	mrmovl 56(%ebx), %edi	# read val from src...
+	rmmovl %edi, 56(%ecx)	# ...and store it to dst
+	andl %edi,%edi		# val <= 0?
+	
+
+pos14:
+	mrmovl 52(%ebx), %edi	# read val from src...
+	rmmovl %edi, 52(%ecx)	# ...and store it to dst
+	andl %edi,%edi		# val <= 0?
+	
+pos13:
+	mrmovl 48(%ebx), %edi	# read val from src...
+	rmmovl %edi, 48(%ecx)	# ...and store it to dst
+	andl %edi,%edi		# val <= 0?
+	
+
+pos12:
+	mrmovl 44(%ebx), %edi	# read val from src...
+	rmmovl %edi, 44(%ecx)	# ...and store it to dst
+	andl %edi,%edi		# val <= 0?
+	
+
+pos11:
+	mrmovl 40(%ebx), %edi	# read val from src...
+	rmmovl %edi, 40(%ecx)	# ...and store it to dst
+	andl %edi,%edi		# val <= 0?
+	
+
+pos10:
+	mrmovl 36(%ebx), %edi	# read val from src...
+	rmmovl %edi, 36(%ecx)	# ...and store it to dst
+	andl %edi,%edi		# val <= 0?
+	
+
+pos9:
+	mrmovl 32(%ebx), %edi	# read val from src...
+	rmmovl %edi, 32(%ecx)	# ...and store it to dst
+	andl %edi,%edi		# val <= 0?
+	
+
+pos8:
+	mrmovl 28(%ebx), %edi	# read val from src...
+	rmmovl %edi, 28(%ecx)	# ...and store it to dst
+	andl %edi,%edi		# val <= 0?
+	
+pos7:
+	mrmovl 24(%ebx), %edi	# read val from src...
+	rmmovl %edi, 24(%ecx)	# ...and store it to dst
+	andl %edi,%edi		# val <= 0?
+	
+
+pos6:
+	mrmovl 20(%ebx), %edi	# read val from src...
+	rmmovl %edi, 20(%ecx)	# ...and store it to dst
+	andl %edi,%edi		# val <= 0?
+
+
+pos5:
+	mrmovl 16(%ebx), %edi	# read val from src...
+	rmmovl %edi, 16(%ecx)	# ...and store it to dst
+	andl %edi,%edi		# val <= 0?
+
+pos4:
+	mrmovl 12(%ebx), %edi	# read val from src...
+	rmmovl %edi, 12(%ecx)	# ...and store it to dst
+	andl %edi,%edi		# val <= 0?
+
+
+pos3:
+	mrmovl 8(%ebx), %edi	# read val from src...
+	rmmovl %edi, 8(%ecx)	# ...and store it to dst
+	andl %edi,%edi		# val <= 0?
+
+
+pos2:
+	mrmovl 4(%ebx), %edi	# read val from src...
+	rmmovl %edi, 4(%ecx)	# ...and store it to dst
+	andl %edi,%edi		# val <= 0?
+
+
+pos1:
+	mrmovl (%ebx), %edi	# read val from src...
+	rmmovl %edi, (%ecx)	# ...and store it to dst
+	andl %edi,%edi		# val <= 0?
+
+
+
+Done1:	#rrmovl %esi,%eax
+	ret
+
+.align 4
+	.long Done1
+	.long pos1
+	.long pos2
+	.long pos3
+	.long pos4
+	.long pos5
+	.long pos6
+	.long pos7
+	.long pos8
+	.long pos9
+	.long pos10
+	.long pos11
+	.long pos12
+	.long pos13
+	.long pos14
+	.long pos15
+	.long pos16
+	.long pos17
+	.long pos18
+	.long pos19
+	.long pos20
+	.long pos21
+Table:
+
+
+##################################################################
+# Do not modify the following section of code
+# Function epilogue.
+Done:
+	popl %edi               # Restore callee-save registers
+	popl %ebx
+	popl %esi
+	rrmovl %ebp, %esp
+	popl %ebp
+	ret
+##################################################################
+# Keep the following label at the end of your function
+
+
+End:
+#/* $end ncopy-ys */

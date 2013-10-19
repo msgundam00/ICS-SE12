@@ -1,0 +1,67 @@
+
+#/* $begin code-yso */
+#/* $begin code-ysa */
+# Execution begins at address 0 
+	.pos 0 
+init:	irmovl Stack, %esp  	# Set up stack pointer  
+	irmovl Stack, %ebp  	# Set up base pointer   
+	call Main		# Execute main program
+	halt			# Terminate program 
+
+# Array of 4 elements
+# Sample linked list
+	.align 4
+ele1:	.long 0x00a
+	.long ele2
+ele2:	.long 0x0b0
+	.long ele3
+ele3:	.long 0xc00
+	.long 0
+
+
+Main:	pushl %ebp 
+	rrmovl %esp,%ebp
+	irmovl ele1,%eax	
+	pushl %eax		# Push ls
+	call Rsum		# rsum_list(list_ptr ls)
+	rrmovl %ebp,%esp
+	popl %ebp
+	ret 
+
+	
+	
+	
+#/* $begin sum-ys 0 */	
+	#int rsum_list(list_ptr ls)
+Rsum:
+	pushl %ebp
+	rrmovl %esp,%ebp
+	mrmovl 8(%ebp),%ecx		#get ls
+
+	andl %ecx,%ecx	#if(ls <= 0)
+	jle Finish		#return 0;
+
+	mrmovl (%ecx),%edx	#get ls->val
+	pushl %edx
+	mrmovl 4(%ecx),%ecx	#get ls->next
+	pushl %ecx		
+	call Rsum	#rsum_list(ls->next);
+	mrmovl 4(%esp),%edx
+	addl %eax,%edx	#val = val + rest;
+	rrmovl %edx,%eax # return val;
+	jmp End
+Finish:
+	irmovl $0,%eax
+End:
+	rrmovl %ebp,%esp
+	popl %ebp
+	ret
+    
+#/* $end sum-ys 0 */
+
+
+# The stack starts here and grows to lower addresses
+	.pos 0x100		
+Stack:	 
+#/* $end code-ysa */
+#/* $end code-yso */
