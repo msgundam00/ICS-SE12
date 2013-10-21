@@ -1,0 +1,18 @@
+int i=0;
+while(1){
+	if(x[i] > 6)
+		explode();
+	int j=i+1;
+	if(j == 6)
+		break;
+	int* temp=&x[i];
+	i=j;
+	do{
+		if(x[i+1] == x[j])
+			explode();
+		i++;
+		temp+=4;
+	}while(i<=5);
+}
+
+

