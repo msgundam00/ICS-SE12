@@ -1,0 +1,4 @@
+ps -o comm | sort
+cat /usr/share/dict/words | grep a | wc -l
+ls -S /etc/ | grep .conf | head -5 |sort 
+echo echo hello world>>echo.sh

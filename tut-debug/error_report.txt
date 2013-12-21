@@ -1,0 +1,118 @@
+/*
+ * BUG#0
+ * description: 
+     miss semicolon
+ * location: 
+ *   int a = 10  (line 18)
+ * evidence: 
+ *   test.c:19: error: two or more data types in declaration specifiers
+ */
+
+
+BUG #0
+description:
+	Doesn't include stdio.h
+location:
+	(line 41)		
+evidence:
+	
+
+BUG#1
+description:
+	miss semicolon
+location:
+	} record_t(line 58)
+evidence:
+	gen_sort.c:58: error: two or more data types in declaration specifiers
+
+
+BUG#2
+description:
+	data type error(record_t instead of record)
+location:
+	gen_rec(record *rec)(line 114)
+evidence:
+	gen_sort.c:114: error: expected declaration specifiers or ‘...’ before ‘(’ token
+	gen_sort.c: In function ‘gen_rec’:
+
+
+
+BUG#3
+description:
+	missing { after if statement
+location:
+	if (!file)(line 188)
+evidence:
+	gen_sort.c:194: error: expected identifier or ‘(’ before ‘while’
+
+
+BUG#4
+description:
+	missing semicolon
+location:
+	enum { buf_size = buf_nrec * 100 }(line 52)
+evidence:
+	gen_sort.c:58: error: two or more data types in declaration
+
+
+BUG#5
+description:
+	fopen argument error
+location:
+	FILE *file = fopen(fn, "r");(line 187)
+evidence:
+	The program always prints "unable to open file" and exits
+
+
+BUG#6
+description:
+	Integer j in for statement is misplaced with i
+location:
+	for (j = 0; j < 10; i++ )(line 125)
+evidence:
+	variable j never increases.
+
+
+
+BUG#7
+description:
+	malloc doesn't allocate enough space for (char*)buf, buf_nrec should be buf_size
+location:
+	char *buf = (char *)malloc(buf_nrec) ;
+evidence:
+	When processing fwrite(), the program returns a segmentation fault. 
+
+
+
+BUG#8
+description:
+	rec_len didn't take recno_len into account,
+location:
+	enum { rec_len = key_len + pad_len };(line 49)
+evidence:
+	Function fwrite doesn't write all chars into file.
+
+
+
+BUG#9
+description:
+	Output interval is 17 instead of 16 numbers
+location:
+		for (cnt = 0; (cnt < buf_nrec)(line 147)
+evidence:
+	When output, program outputs when 17 records are processed instead of 16.
+
+
+
+BUG#10
+description:
+	Data types hasn't been altered to fit the large numbers
+location:
+	int cnt;(line 144)
+	int cnt = fill_buf(buf);(line 195)
+	int ret = (int)fwrite(buf, 1, cnt * rec_len, file);(line 196)
+evidence:
+	The same as the one above. 
+
+
+
